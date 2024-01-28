@@ -95,7 +95,7 @@ From employee
 Where salary >= 30000 OR dno in (4, 5)
 Order by salary desc;
 
--- ###### Aggregate Functions ########
+------ Aggregate Functions ------
 
 select count(*) as total_employees from employee; -- Total employees
 select avg(salary) as average_salary FROM employee; -- Average salary
@@ -106,54 +106,54 @@ select count(distinct dno) as total_deps from employee; -- Distinct departments
 -- Get min, max, avg, total salaries of all male employees
 select 
 	MIN(salary) as min_salary_male,
-  MAX(salary) as max_salary_male, 
-  AVG(salary) as avg_salary_male,
-  SUM(salary) as total_salary_male
+    MAX(salary) as max_salary_male, 
+    AVG(salary) as avg_salary_male,
+    SUM(salary) as total_salary_male
 from employee
 where sex='M';
 
--- # Select birth day, month, year from employees
+--- Select birth day, month, year from employees
 select 
 	day(bdate) as birth_day,
 	month(bdate) as birth_month,
 	year(bdate) as birth_yr
 from employee;
 
--- # Current date, time, timestamp
+--- Current date, time, timestamp
 select current_date(), current_time(), current_timestamp();
 
--- # Select age of employees in days
+--- Select age of employees in days
 select ssn, bdate, datediff(current_date(), bdate) as age_in_days
 from employee;
 
--- # Select age of employees in years
+--- Select age of employees in years
 select ssn, bdate, round(datediff(current_date(), bdate) / 365) as age_in_yrs
 from employee;
 
--- # Select age of employees in years (II)
+--- Select age of employees in years (II)
 select ssn, bdate, year(current_date()) - year(bdate) as age_in_yrs
 from employee;
 
--- # Add 6 months to birth date
+--- Add 6 months to birth date
 select ssn, bdate, date_add(bdate, interval 6 month) as new_date
 from employee;
 
--- # Add 7 days to birth date
+--- Add 7 days to birth date
 select ssn, bdate, date_add(bdate, interval 7 day) as new_date
 from employee;
 
--- ########### String Manipulation ###############
+------ String Manipulation ------
 -- Concat
 select concat(fname, ' ', lname) as full_name
 from employee;
 
--- # Substring
+--- Substring
 select substr(fname, 2, 4) as my_substr -- Starting from index 2, get 4 chars
 from employee;
 
 -- Get last 3 letters
 select right(fname, 3) as last_3_chars from employee;
--- # OR
+--- OR
 select substr(fname, -3, 3) as last_3_chars from employee;
 
 -- Max no of hours an employee worked?
@@ -195,25 +195,35 @@ SELECT
     avg(salary) as avg_salary,
     min(salary) as min_salary
 FROM employee
+WHERE sex = 'M'
 GROUP BY dno
 ORDER BY dno desc;
 
--- ############# The HAVING Clause ################
+------ The HAVING Clause ------
 -- List of employees who have at least 2 dependents
-SELECT essn, count(*) as total_dependents
-FROM dependent
-GROUP BY essn
-HAVING total_dependents > 2; -- 'HAVING' is same as 'WHERE' except that it accepts variables generated. Eg. total_dependents
+select essn, count(*) as dependents
+from dependent
+group by essn
+having dependents >= 2; -- 'HAVING' is same as 'WHERE' except that it accepts variables generated. Eg. total_dependents
 
---  List of departments where avg salary is more than 30000
+--  List of departments where avg salary is more than 35000
 SELECT dno, avg(salary) as avg_salary
 FROM employee
 GROUP BY dno
-HAVING avg_salary > 35000;
+HAVING avg_salary > 30000;
 
--- ############# The CASE WHEN clause ###############
+-- Another Approach
+select
+	dno,
+	case
+		when avg(salary) > 35000 then 'Yes' else 'No'
+    end as salary_exceeds_35000
+from employee
+group by dno;
+
+------ The CASE WHEN clause ------
 -- It is used to create a new column in the existing tables
--- # Create a new column 'salary_bucket' which records '>=35k' if salary is more than 35,000 else '<35k'
+--- Create a new column 'salary_bucket' which records '>=35k' if salary is more than 35,000 else '<35k'
 SELECT
 	ssn,
     salary,
@@ -223,15 +233,16 @@ SELECT
     END as salary_bucket
 FROM employee;
 
+-- Select male, female salary
 SELECT
 	ssn,
 	sex,
 	CASE
 		WHEN sex='M' THEN floor(salary) ELSE 0
-	END AS male_salary,		-- Notice the ',' separator
+		END AS male_salary,		-- Notice the ',' separator
 	CASE
 		WHEN sex='F' THEN floor(salary) ELSE 0
-	END AS female_salary
+		END AS female_salary
 FROM employee;
     
 -- Select avg salary for each gender
@@ -240,49 +251,87 @@ FROM employee
 GROUP BY sex;
 
 --- OR ---
-
 SELECT
 	avg(CASE when sex='M' then salary END) as avg_male_salary,
 	avg(CASE when sex='F' then salary  END) as avg_female_salary
 FROM employee;
 
--- Count the no of sons, daughter, spouse of each employee
-SELECT
-	essn, 
-    count(CASE when relationship='Daughter' then 1 END) as daughters_count,
-    count(CASE when relationship='Son' then 1 END) as sons_count,
-    count(CASE when relationship='Spouse' then 1 END) as spouse_count
-FROM dependent
-GROUP BY essn;
+-- Count the no of sons, daughters, spouse of each employee
+select
+	essn,
+	count(case when lower(relationship) = 'daughter' then 1 end) as daughters,
+    count(case when lower(relationship) = 'son' then 1 end) as sons,
+    count(case when lower(relationship) = 'spouse' then 1 end) as spouses
+from dependent
+group by essn;
 
--- # 2. What is the salary range in the company? (salary range is difference between minimum and maximum salary)
+-- 2. What is the salary range in the company? (salary range is difference between minimum and maximum salary)
+select * from employee;
 
--- # 3. How many distinct department locations are there?
+-- 3. How many distinct department locations are there?
 SELECT distinct dlocation, dnumber
 FROM dept_locations;
 
--- # 4. how many distinct employees have daughters as dependent
+-- 4. how many distinct employees have daughters as dependent
 SELECT count(distinct essn) as total_employees_with_daughters
 FROM dependent
 WHERE relationship = 'Daughter';
 
--- # 5. how many projects are there under department 5?
+-- 5. how many projects are there under department 5?
 SELECT count(*)
 FROM department
 WHERE dnumber = 5;
 
--- # 6. What is the avg salary of employees who are from department 5 and are male?
+-- 6. What is the avg salary of employees who are from department 5 and are male?
 SELECT avg(salary)
 FROM employee
 WHERE dno = 5 and sex='M';
 
--- # 7. Create a column "manager_null_flag" which has 1 when the manager id is null else it is 0 (in employee table)
+-- 7. Create a column "manager_null_flag" which has 1 when the manager id is null else it is 0 (in employee table)
 SELECT
 	super_ssn,
 	CASE
 		when super_ssn is NULL then 1 else 0
 	END AS 'manager_null_flag'
-FROM employee
+FROM employee;
+
+---- JOINS -----
+-- Select employees and their respective departments each belong to
+-- select e.*, d.dname as department
+SELECT
+	e.ssn,
+	concat(e.fname, ' ', e.lname) as fullname,
+    d.dname as department_name
+FROM
+	employee as e
+    LEFT JOIN department as d
+    ON e.dno = d.dnumber;
+    
+-- Bring first & last name to the works_on table
+select distinct w.essn as emp_id, w.pno, w.hours, e.fname, e.lname
+from
+	works_on as w
+	left join employee as e
+    on w.essn = e.ssn;
+
+-- Bring department manager id to the project table
+select * from department;
+select * from project;
+
+select p.*, d.mgr_ssn as manager_id
+from department as d
+	left join project as p
+    on d.dnumber = p.dnum;
+
+-- Find the total work hours for each employee. Attach their corresponding first and lastnames
+select essn, sum(w.hours), e.fname, e.lname
+from
+	works_on as w
+	left join employee as e
+    on w.essn = e.ssn
+group by w.essn, e.fname, e.lname;
+
+	
 
 
 
