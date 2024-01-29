@@ -332,6 +332,53 @@ from
 group by w.essn, e.fname, e.lname;
 
 	
+---------------- WINDOW FUNCTIONS ---------------
+
+-- Update Statement
+update employee
+set salary = 40000
+where fname = "Ramesh";
+-- select * from employee;
+
+select
+	ssn, fname, lname, salary,
+    LAG(salary) over (order by salary desc) as  previous_salary,
+    LAG(salary, 2) over (order by salary desc) as last_2_salaries,
+    LEAD(salary) over (order by salary desc) as next_salary,
+    ROW_NUMBER() over (order by salary desc) as row_num,
+    RANK() over (order by salary desc) as rank_1,
+    DENSE_RANK() over (order by salary desc) as rank_2
+from employee
+order by salary desc;
+
+select
+	ssn, fname, lname, dno, salary,
+    LAG(salary) OVER (partition by dno order by salary desc) as prev_salary
+from employee
+order by dno, salary desc;
+
+-- Get the rank of male and female employees separately
+select
+	ssn, fname, lname, dno, sex, salary,
+    rank() over (partition by sex order by salary desc) as rank_1,
+    dense_rank() over (partition by sex order by salary desc) as rank_2
+from employee
+order by sex, salary desc;
+
+--------- ADD NEW COLUMN TO TABLE
+ALTER TABLE employee
+ADD COLUMN bonus int;
+-- select * from employee;
+
+--------- DROP COLUMN FROM EXISTING TABLE
+ALTER TABLE employee
+DROP COLUMN bonus;
+-- select * from employee;
+
+-------- UPDATE
+UPDATE employee
+set bonus = 0.15 * salary;
+select * from employee;
 
 
 
