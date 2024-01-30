@@ -225,8 +225,7 @@ group by dno;
 -- It is used to create a new column in the existing tables
 --- Create a new column 'salary_bucket' which records '>=35k' if salary is more than 35,000 else '<35k'
 SELECT
-	ssn,
-    salary,
+	ssn, salary,
 	CASE
 		WHEN salary >= 35000 THEN ">=35k"
 		WHEN salary <= 35000 THEN ">=35k"
@@ -235,8 +234,7 @@ FROM employee;
 
 -- Select male, female salary
 SELECT
-	ssn,
-	sex,
+	ssn, sex,
 	CASE
 		WHEN sex='M' THEN floor(salary) ELSE 0
 		END AS male_salary,		-- Notice the ',' separator
@@ -260,8 +258,8 @@ FROM employee;
 select
 	essn,
 	count(case when lower(relationship) = 'daughter' then 1 end) as daughters,
-    count(case when lower(relationship) = 'son' then 1 end) as sons,
-    count(case when lower(relationship) = 'spouse' then 1 end) as spouses
+	count(case when lower(relationship) = 'son' then 1 end) as sons,
+	count(case when lower(relationship) = 'spouse' then 1 end) as spouses
 from dependent
 group by essn;
 
